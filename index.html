@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Ukážky prác z kurzu</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
       --bg: #f6f7f9;
@@ -28,7 +29,7 @@
       padding: 28px 20px;
     }
     .wrap {
-      max-width: 980px;
+      max-width: 920px;
       margin: 0 auto;
     }
     h1 {
@@ -40,51 +41,110 @@
       color: var(--muted);
     }
     main {
-      padding: 28px 20px 56px;
+      padding: 28px 20px 64px;
     }
     .stack {
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 36px;
     }
-    .work-card {
+    .reader-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
     }
-    .work-head {
+    .reader-head {
       padding: 16px 20px;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
+      align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .work-head h2 {
+    .reader-head h2 {
       margin: 0 0 4px;
       font-size: 1.15rem;
     }
-    .work-head p {
+    .reader-head p {
       margin: 0;
       color: var(--muted);
       font-size: 0.92rem;
     }
-    .btn-link {
+    .reader-toolbar {
+      padding: 10px 20px;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button, a.btn {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.88rem;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button.nav-btn {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+    }
+    button.nav-btn:hover:not(:disabled) {
+      background: #f0f2f5;
+    }
+    button.nav-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .page-counter {
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-width: 110px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .btn-open {
       background: var(--accent);
       color: #fff;
-      text-decoration: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      white-space: nowrap;
+      border: none;
+      padding: 7px 13px;
     }
-    iframe {
-      width: 100%;
-      height: 75vh;
-      border: 0;
-      display: block;
+    .canvas-stage {
+      padding: 18px;
+      background: #eef1f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 360px;
+      justify-content: center;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      display: none;
+    }
+    .msg {
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+      max-width: 520px;
     }
   </style>
 </head>
@@ -93,40 +153,145 @@
     <div class="wrap">
       <!-- UPRAV NÁZOV KURZU A POPIS -->
       <h1 id="course-title">Názov kurzu</h1>
-      <p class="subtitle" id="course-note">Ukážky prác zoradené pod sebou</p>
+      <p class="subtitle" id="course-note">Ukážky prác zoradené pod sebou – v každom PDF sa dá listovať</p>
     </div>
   </header>
 
   <main>
     <div class="wrap">
-      <div class="stack" id="works-stack"></div>
+      <div class="stack" id="readers-stack"></div>
     </div>
   </main>
 
   <script>
-    // UPRAV ZOZNAM PRÁC: title = názov ukážky, desc = popis, file = názov PDF súboru
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    // UPRAV ZOZNAM PRÁC: každá položka = jeden PDF čítač pod sebou
     const works = [
-      { title: "Ukážka 01", desc: "Krátky popis ukážky", file: "ukazka-01.pdf" },
-      { title: "Ukážka 02", desc: "Krátky popis ukážky", file: "ukazka-02.pdf" },
-      { title: "Ukážka 03", desc: "Krátky popis ukážky", file: "ukazka-03.pdf" }
+      { title: "Práca 01", desc: "10-stranové portfólio – zameranie na grafický dizajn", file: "praca-01.pdf" },
+      { title: "Práca 02", desc: "10-stranové portfólio – UX / webdizajn", file: "praca-02.pdf" },
+      { title: "Práca 03", desc: "10-stranové portfólio – branding a tlačoviny", file: "praca-03.pdf" }
     ];
 
-    const stack = document.getElementById("works-stack");
+    const stack = document.getElementById("readers-stack");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && typeof entry.target._initPdf === "function") {
+            entry.target._initPdf();
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "250px 0px" }
+    );
 
     works.forEach((work) => {
       const card = document.createElement("section");
-      card.className = "work-card";
+      card.className = "reader-card";
       card.innerHTML = `
-        <div class="work-head">
+        <div class="reader-head">
           <div>
             <h2>${work.title}</h2>
             <p>${work.desc}</p>
           </div>
-          <a class="btn-link" href="${work.file}" target="_blank" rel="noopener">Otvoriť v novom okne</a>
+          <a class="btn btn-open" href="${work.file}" target="_blank" rel="noopener">Otvoriť celé PDF</a>
         </div>
-        <iframe src="${work.file}" title="${work.title}"></iframe>
+        <div class="reader-toolbar">
+          <div class="nav-group">
+            <button type="button" class="nav-btn prev-btn" disabled>← Predchádzajúca</button>
+            <span class="page-counter">Pripravujem...</span>
+            <button type="button" class="nav-btn next-btn" disabled>Ďalšia →</button>
+          </div>
+        </div>
+        <div class="canvas-stage">
+          <p class="msg">PDF čítač sa načíta pri priblížení k sekcii...</p>
+          <canvas></canvas>
+        </div>
       `;
       stack.appendChild(card);
+
+      const prevBtn = card.querySelector(".prev-btn");
+      const nextBtn = card.querySelector(".next-btn");
+      const counter = card.querySelector(".page-counter");
+      const msg = card.querySelector(".msg");
+      const canvas = card.querySelector("canvas");
+      const ctx = canvas.getContext("2d");
+
+      let pdfDoc = null;
+      let currentPage = 1;
+      let isRendering = false;
+      let loaded = false;
+
+      function renderPage(num) {
+        if (!pdfDoc) return;
+        isRendering = true;
+        counter.textContent = `Strana ${num} / ${pdfDoc.numPages}`;
+
+        pdfDoc.getPage(num).then((page) => {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const unscaledViewport = page.getViewport({ scale: 1 });
+          const targetWidth = Math.min(820, card.clientWidth - 36);
+          const scale = (targetWidth / unscaledViewport.width) * dpr;
+          const viewport = page.getViewport({ scale });
+
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
+          canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
+          canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
+          canvas.style.display = "block";
+          msg.style.display = "none";
+
+          page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+            isRendering = false;
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= pdfDoc.numPages;
+          });
+        });
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (isRendering || currentPage <= 1) return;
+        currentPage--;
+        renderPage(currentPage);
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (isRendering || !pdfDoc || currentPage >= pdfDoc.numPages) return;
+        currentPage++;
+        renderPage(currentPage);
+      });
+
+      card._initPdf = () => {
+        if (loaded) return;
+        loaded = true;
+
+        if (window.location.protocol === "file:") {
+          counter.textContent = "Lokálny súbor";
+          msg.innerHTML =
+            "Prehliadač zablokoval načítanie lokálneho PDF pri otvorení cez <code>file://</code>. Nahraj priečinok na <strong>GitHub Pages</strong> alebo <strong>Netlify Drop</strong> (prípadne spusti lokálny server).";
+          return;
+        }
+
+        counter.textContent = "Načítavam...";
+        msg.textContent = "Načítavam dokument...";
+
+        pdfjsLib
+          .getDocument(work.file)
+          .promise.then((doc) => {
+            pdfDoc = doc;
+            currentPage = 1;
+            renderPage(currentPage);
+          })
+          .catch(() => {
+            counter.textContent = "Chyba";
+            msg.textContent = `Nepodarilo sa načítať "${work.file}". Skontroluj, či súbor existuje v rovnakom priečinku a či má presne tento názov.`;
+          });
+      };
+
+      observer.observe(card);
     });
   </script>
 </body>

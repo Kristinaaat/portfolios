@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Ukážky prác z kurzu</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #181a1f;
+      --muted: #5c6370;
+      --accent: #1f4e78;
+      --border: #e3e6ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 20px;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.75rem;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+    }
+    main {
+      padding: 28px 20px 56px;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .work-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .work-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .work-head h2 {
+      margin: 0 0 4px;
+      font-size: 1.15rem;
+    }
+    .work-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .btn-link {
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+    iframe {
+      width: 100%;
+      height: 75vh;
+      border: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <!-- UPRAV NÁZOV KURZU A POPIS -->
+      <h1 id="course-title">Názov kurzu</h1>
+      <p class="subtitle" id="course-note">Ukážky prác zoradené pod sebou</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="stack" id="works-stack"></div>
+    </div>
+  </main>
+
+  <script>
+    // UPRAV ZOZNAM PRÁC: title = názov ukážky, desc = popis, file = názov PDF súboru
+    const works = [
+      { title: "Ukážka 01", desc: "Krátky popis ukážky", file: "ukazka-01.pdf" },
+      { title: "Ukážka 02", desc: "Krátky popis ukážky", file: "ukazka-02.pdf" },
+      { title: "Ukážka 03", desc: "Krátky popis ukážky", file: "ukazka-03.pdf" }
+    ];
+
+    const stack = document.getElementById("works-stack");
+
+    works.forEach((work) => {
+      const card = document.createElement("section");
+      card.className = "work-card";
+      card.innerHTML = `
+        <div class="work-head">
+          <div>
+            <h2>${work.title}</h2>
+            <p>${work.desc}</p>
+          </div>
+          <a class="btn-link" href="${work.file}" target="_blank" rel="noopener">Otvoriť v novom okne</a>
+        </div>
+        <iframe src="${work.file}" title="${work.title}"></iframe>
+      `;
+      stack.appendChild(card);
+    });
+  </script>
+</body>
+</html>
